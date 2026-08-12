@@ -1,8 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
-import { Command } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 
 import {
@@ -15,13 +15,12 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { APP_CONFIG } from "@/config/app-config";
-import { rootUser } from "@/data/users";
+import { useAuth } from "@/contexts/auth-context";
 import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
 import { usePreferencesStore } from "@/stores/preferences/preferences-provider";
 
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
-import { SupportCard } from "./support-card";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { sidebarVariant, sidebarCollapsible, isSynced } = usePreferencesStore(
@@ -32,6 +31,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     })),
   );
 
+  const { currentEmployee, currentUser, isLoading } = useAuth();
+
   const variant = isSynced ? sidebarVariant : props.variant;
   const collapsible = isSynced ? sidebarCollapsible : props.collapsible;
 
@@ -41,9 +42,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link prefetch={false} href="/dashboard/default">
-                <Command />
-                <span className="font-semibold text-base">{APP_CONFIG.name}</span>
+              <Link prefetch={false} href="/dashboard">
+                <Image src="/logo.png" alt="مستشار المدينة" width={24} height={24} className="object-contain" />
+                <span className="font-semibold text-base">مستشار المدينة</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -53,8 +54,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={sidebarItems} />
       </SidebarContent>
       <SidebarFooter>
-        <SupportCard />
-        <NavUser user={rootUser} />
+        {currentEmployee && currentUser ? (
+          <NavUser
+            user={{
+              name: currentEmployee.full_name,
+              email: currentEmployee.email,
+              avatar: currentEmployee.avatar_url || currentUser.user_metadata.avatar_url || "",
+            }}
+          />
+        ) : isLoading ? (
+          <div className="px-4 py-2 text-sm text-muted-foreground">جاري التحميل...</div>
+        ) : null}
       </SidebarFooter>
     </Sidebar>
   );

@@ -87,20 +87,23 @@ export function NavMain({ items }: NavMainProps) {
 
   const isItemActive = (item: NavMainItem) => {
     if (hasSubItems(item)) {
-      return item.subItems.some((sub) => path.startsWith(sub.url));
+      return item.subItems.some(
+        (sub) => !sub.disabled && sub.url !== "/dashboard/coming-soon" && path.startsWith(sub.url),
+      );
     }
 
     return path === item.url;
   };
 
   const isSubItemActive = (url: string) => {
-    return path === url;
+    return url !== "/dashboard/coming-soon" && path === url;
   };
 
   const isSubmenuOpen = (item: NavMainParentItem) => {
-    return item.subItems.some((sub) => path.startsWith(sub.url));
+    return item.subItems.some(
+      (sub) => !sub.disabled && sub.url !== "/dashboard/coming-soon" && path.startsWith(sub.url),
+    );
   };
-
   return (
     <>
       <SidebarGroup>
@@ -112,7 +115,7 @@ export function NavMain({ items }: NavMainProps) {
                 className="min-w-8 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
               >
                 <PlusCircleIcon />
-                <span>Quick Create</span>
+                <span>اضافة حقل</span>
               </SidebarMenuButton>
               <Button
                 size="icon"
@@ -163,7 +166,6 @@ function NavItem({ item, isItemActive, isSubItemActive, isSubmenuOpen }: NavItem
   if (isCollapsedDesktop) {
     return <NavDropdownItem item={item} isActive={isItemActive(item)} isSubItemActive={isSubItemActive} />;
   }
-
   return (
     <NavCollapsibleItem
       item={item}
@@ -229,14 +231,25 @@ function NavDropdownItem({ item, isActive, isSubItemActive }: NavDropdownItemPro
                 <DropdownMenuItem key={subItem.id} asChild disabled={subItem.disabled}>
                   <Link
                     prefetch={false}
-                    href={subItem.url}
+                    href={subItem.disabled ? "#" : subItem.url}
                     target={subItem.newTab ? "_blank" : undefined}
                     rel={subItem.newTab ? "noreferrer" : undefined}
                     aria-current={isSubItemActive(subItem.url) ? "page" : undefined}
-                    className="flex items-center gap-2"
+                    className={cn("flex items-center gap-2", subItem.disabled && "pointer-events-none opacity-50")}
                   >
                     {SubIcon && <SubIcon />}
-                    <span>{subItem.title}</span>
+                    <span className="flex-1">{subItem.title}</span>
+                    {subItem.badge && (
+                      <span
+                        className={cn(
+                          "rounded-sm border px-1 py-0.5 text-[10px] uppercase",
+                          subItem.badge === "new" && "border-green-600 text-green-600",
+                          subItem.badge === "soon" && "border-muted-foreground text-muted-foreground",
+                        )}
+                      >
+                        {subItem.badge}
+                      </span>
+                    )}
                   </Link>
                 </DropdownMenuItem>
               );
@@ -258,7 +271,7 @@ function NavCollapsibleItem({ item, isActive, defaultOpen, isSubItemActive }: Na
           <SidebarMenuButton tooltip={item.title} isActive={isActive} disabled={item.disabled}>
             {Icon && <Icon />}
             <span>{item.title}</span>
-            <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+            <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 rtl:rotate-180 rtl:group-data-[state=open]/collapsible:rotate-90" />
           </SidebarMenuButton>
         </CollapsibleTrigger>
         <NavItemBadge badge={item.badge} />
@@ -269,7 +282,7 @@ function NavCollapsibleItem({ item, isActive, defaultOpen, isSubItemActive }: Na
               const SubIcon = subItem.icon;
 
               return (
-                <SidebarMenuSubItem key={subItem.id}>
+                <SidebarMenuSubItem key={subItem.id} className="relative">
                   <SidebarMenuSubButton
                     asChild
                     aria-disabled={subItem.disabled}
@@ -277,14 +290,26 @@ function NavCollapsibleItem({ item, isActive, defaultOpen, isSubItemActive }: Na
                   >
                     <Link
                       prefetch={false}
-                      href={subItem.url}
+                      href={subItem.disabled ? "#" : subItem.url}
                       target={subItem.newTab ? "_blank" : undefined}
                       rel={subItem.newTab ? "noreferrer" : undefined}
+                      className={cn(subItem.disabled && "pointer-events-none opacity-50")}
                     >
                       {SubIcon && <SubIcon />}
                       <span>{subItem.title}</span>
                     </Link>
                   </SidebarMenuSubButton>
+                  {subItem.badge && (
+                    <span
+                      className={cn(
+                        "absolute right-2 top-1/2 -translate-y-1/2 rounded-sm border px-1 py-0.5 text-[10px] uppercase rtl:left-2 rtl:right-auto",
+                        subItem.badge === "new" && "border-green-600 text-green-600",
+                        subItem.badge === "soon" && "border-muted-foreground text-muted-foreground",
+                      )}
+                    >
+                      {subItem.badge}
+                    </span>
+                  )}
                 </SidebarMenuSubItem>
               );
             })}

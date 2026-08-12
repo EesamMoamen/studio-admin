@@ -2,18 +2,19 @@ import type { ReactNode } from "react";
 
 import { cookies } from "next/headers";
 
+import { EmployeeStatusCheck } from "@/app/(main)/dashboard/_components/employee-status-check";
 import { AppSidebar } from "@/app/(main)/dashboard/_components/sidebar/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { users } from "@/data/users";
 import { cn } from "@/lib/utils";
 import { getPreference } from "@/server/server-actions";
 
 import { AccountSwitcher } from "./_components/header/account-switcher";
-import { GitHubRepositoriesMenu } from "./_components/header/github-repositories-menu";
-import { LayoutControls } from "./_components/header/layout-controls";
 import { SearchDialog } from "./_components/header/search-dialog";
+import { SettingsTrigger } from "./_components/header/settings-trigger";
 import { ThemeSwitcher } from "./_components/header/theme-switcher";
+
+import { NotificationTrigger } from "./_components/header/notification-trigger";
 
 export default async function Layout({ children }: Readonly<{ children: ReactNode }>) {
   const cookieStore = await cookies();
@@ -32,7 +33,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant={variant} collapsible={collapsible} />
+      <AppSidebar variant={variant} collapsible={collapsible} side="right" />
       <SidebarInset
         className={cn(
           "[html[data-content-layout=centered]_&>*]:mx-auto",
@@ -60,15 +61,16 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
               <SearchDialog />
             </div>
             <div className="flex items-center gap-2">
-              <LayoutControls />
+              <NotificationTrigger />
+              <SettingsTrigger />
               <ThemeSwitcher />
-              <GitHubRepositoriesMenu />
-              <AccountSwitcher users={users} />
+              <AccountSwitcher />
             </div>
           </div>
         </header>
         {/* Pages can set data-content-padding="false" to render full-bleed app layouts. */}
         <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden p-4 has-data-[content-padding=false]:p-0 md:p-6 md:has-data-[content-padding=false]:p-0">
+          <EmployeeStatusCheck />
           {children}
         </div>
       </SidebarInset>
